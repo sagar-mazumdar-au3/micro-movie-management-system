@@ -1,10 +1,13 @@
-import React from 'react';
-import { Card, Form, Button } from 'react-bootstrap';
-import { useDispatch } from "react-redux";
-import { checkedListArray as addToList } from "../redux/actions";
+import React, {useState, useCallback} from 'react';
+import { Card, Form, Button, Alert } from 'react-bootstrap';
 
-function Movie({ title, year, poster, index, updateCheckedList, watched, remove }) {
-    const dispatch = useDispatch();
+function Movie({ title, year, poster, index, updateCheckedList, handleAddToListClick, watched, remove }) {
+    const [error, setError] = useState();
+
+    const popAlert = useCallback((m,v) => {
+        setError({message: m, variant: v});
+        setTimeout(()=>{setError(null)},1000);
+    },[])
 
     return (
         <>
@@ -18,12 +21,15 @@ function Movie({ title, year, poster, index, updateCheckedList, watched, remove 
                     <div>
                         <Card.Text>year : {year}
                             <span className="float-right">
-                                
-                                { remove ? <Button variant="danger" size="sm" onClick={() => { dispatch(addToList([index], 'RemoveFromMyList')) }}>Remove from my list</Button> : <Button variant="secondary" size="sm" onClick={() => { dispatch(addToList([index], 'AddToMyList')) }}>Add to my list</Button>}
-                                {!watched && <Button variant="secondary" size="sm" onClick={() => { dispatch(addToList([index], 'AddToMyWatchedList')) }} className='ml-2'>Add to my watched list</Button>}
+
+                                {remove ? <Button variant="danger" size="sm" onClick={() => { handleAddToListClick('RemoveFromMyList', index);  }}>Remove from my list</Button> : <Button variant="secondary" size="sm" onClick={() => { handleAddToListClick('AddToMyList', index); popAlert('Successfully added to my list !', 'success')}}>Add to my list</Button>}
+                                {!watched ? <Button variant="secondary" size="sm" onClick={() => { handleAddToListClick('AddToMyWatchedList', index); popAlert('Successfully added to my watched list !', 'success') }} className='ml-2'>Add to my watched list</Button> : <Button variant="danger" className='ml-2' size="sm" onClick={() => { handleAddToListClick('RemoveFromMyWatchedList', index); }}>Remove from my watched list</Button>}
 
                             </span>
                         </Card.Text>
+                    </div>
+                    <div>
+                        {error && <Alert className='p-1 mt-3' variant={error.variant}>{error.message}</Alert>}
                     </div>
                 </Card.Body>
             </Card>

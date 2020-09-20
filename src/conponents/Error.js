@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { Alert, Container } from 'react-bootstrap';
 
 function Error({ message }) {

@@ -8,31 +8,15 @@ import thunk from 'redux-thunk';
 
 const initialState = {
     // Movies
-    movies: [],
-    myList: [],
-
-    // Error
-    error: { error: false, message: '' }
+    myList: []
 }
 
 const reducer = (state = initialState, action) => {
-    let copyOfState = JSON.parse(JSON.stringify(state));
+    let copyOfState = Object.assign(state);
     switch (action.type) {
-        case 'MOVIES': {
-            copyOfState.movies = action.payload;
-            copyOfState.error.error = false;
-            copyOfState.error.message = "";
-            return copyOfState;
-        }
-        case 'ERROR': {
-            copyOfState.error.error = true;
-            copyOfState.error.message = action.payload;
-            return copyOfState;
-        }
         case 'ADD-TO-MY-LIST': {
-            const checkedList = action.payload;
-            checkedList.forEach(index => {
-                const movie = copyOfState.movies[index];
+            const moviesList = action.payload;
+            moviesList.forEach(movie => {
                 let alreadyPresent = false;
                 for (let i = 0; i < copyOfState.myList.length; i++) {
                     if (copyOfState.myList[i].imdbID === movie.imdbID) {
@@ -48,14 +32,14 @@ const reducer = (state = initialState, action) => {
             return copyOfState;
         }
         case 'ADD-TO-MY-WATCHED-LIST': {
-            const checkedList = action.payload;
-            checkedList.forEach(index => {
-                const movie = copyOfState.movies[index];
+            const moviesList = action.payload;
+            let copyOfMyList = [...copyOfState.myList];
+            moviesList.forEach(movie => {
                 let alreadyPresent = false;
                 let presentAt;
 
-                for (let i = 0; i < copyOfState.myList.length; i++) {
-                    if (copyOfState.myList[i].imdbID === movie.imdbID) {
+                for (let i = 0; i < copyOfMyList.length; i++) {
+                    if (copyOfMyList[i].imdbID === movie.imdbID) {
                         alreadyPresent = true;
                         presentAt = i;
                         break;
@@ -63,26 +47,36 @@ const reducer = (state = initialState, action) => {
                 }
 
                 if (alreadyPresent) {
-                    copyOfState.myList[presentAt].watched = true;
+                    copyOfMyList[presentAt].watched = true;
+                    copyOfState.myList = copyOfMyList;
                 } else {
                     movie.watched = true;
                     copyOfState.myList.unshift(movie);
                 }
             });
+
+            return copyOfState;
+        }
+        case 'REMOVE-FROM-MY-LIST': {
+            const moviesList = action.payload;
+            let copyOfMyList = [...copyOfState.myList];
+            moviesList.forEach(movie => {
+                copyOfMyList = copyOfMyList.filter(element => {
+                    return element.imdbID !== movie.imdbID;
+                }); 
+            });
+            
+            copyOfState.myList = copyOfMyList;
             return copyOfState;
         }
         case 'REMOVE-FROM-MY-WATCHED-LIST': {
-            const checkedList = action.payload;
-            const imdbIDList = [];
+            const moviesList = action.payload;
             let copyOfMyList = [...copyOfState.myList];
-            checkedList.forEach(index => {
-                imdbIDList.push(copyOfMyList[index].imdbID);
-            });
-           
-            imdbIDList.forEach(imdbID => {
-                copyOfMyList = copyOfMyList.filter(element => {
-                    return element.imdbID !== imdbID;
-                }); 
+            moviesList.forEach(movie => {
+                for(let i = 0; i< copyOfMyList.length;i++){
+                    if(movie.imdbID === copyOfMyList[i].imdbID)
+                    delete copyOfMyList[i].watched;
+                }
             });
             
             copyOfState.myList = copyOfMyList;
