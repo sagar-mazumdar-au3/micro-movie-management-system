@@ -12,7 +12,8 @@ const initialState = {
 }
 
 const reducer = (state = initialState, action) => {
-    let copyOfState = Object.assign(state);
+    //let copyOfState = Object.assign(state);
+    let copyOfState = JSON.parse(JSON.stringify(state));
     switch (action.type) {
         case 'ADD-TO-MY-LIST': {
             const moviesList = action.payload;
